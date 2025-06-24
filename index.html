@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sheet 3</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #3498db 0%, #6dd5fa 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        transition: background 0.3s ease, color 0.3s ease;
+      }
+
+      #theme-toggle {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        padding: 8px 14px;
+        font-size: 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #2980b9;
+        color: white;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+        z-index: 1000;
+      }
+
+      #theme-toggle:hover {
+        background-color: #1c5980;
+      }
+
+      .container {
+        width: 420px;
+        background: #ffffff;
+        padding: 30px 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      #question-text {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #333;
+        padding: 14px 20px;
+        background-color: #e3f2fd;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+        user-select: none;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .btn-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 15px;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: #3498db;
+        color: white;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+        transform: scale(1.02);
+      }
+
+      button:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+      }
+
+      .correct,
+      .correct:hover {
+        background-color: #2ecc71 !important;
+      }
+
+      .wrong,
+      .wrong:hover {
+        background-color: #e74c3c !important;
+      }
+
+      .answer-btn:last-of-type {
+        margin-bottom: 10px;
+      }
+
+      #question-number {
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      #result-box {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        padding: 12px;
+        background-color: #dfefff;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      body.dark {
+        background: linear-gradient(135deg, #181818 0%, #0c0c0c 100%);
+        color: #ddd;
+      }
+
+      body.dark .container {
+        background: #1c1c1c;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+      }
+
+      body.dark #question-text {
+        background-color: #353535;
+        color: #f0f0f0;
+        box-shadow: 0 5px 1px rgba(70, 130, 180, 0.5);
+      }
+
+      body.dark #question-number {
+        color: #bbb;
+      }
+
+      body.dark #result-box {
+        background-color: #3a3a3a;
+        color: #eee;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      }
+
+      body.dark button {
+        background-color: #1b4f72;
+      }
+
+      body.dark button:hover {
+        background-color: #1c5980;
+      }
+
+      body.dark button:disabled {
+        background-color: #555;
+      }
+
+      body.dark .correct,
+      body.dark .correct:hover {
+        background-color: #27ae60;
+      }
+
+      body.dark .wrong,
+      body.dark .wrong:hover {
+        background-color: #c0392b;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="theme-toggle">Dark mode</button>
+
+    <div class="container">
+      <h2 id="quiz-title">Sheet 3</h2>
+
+      <div id="start-box">
+        <button id="start-btn">Start</button>
+      </div>
+
+      <div id="quiz-box" class="hide">
+        <div id="question-number"></div>
+        <div id="question-text"></div>
+        <div id="answer-buttons" class="btn-grid"></div>
+        <button id="next-btn" disabled>Next</button>
+      </div>
+
+      <div id="result-box" class="hide">
+        <h3>Your Score</h3>
+        <p id="score-text"></p>
+        <button id="try-again-btn">Try Again</button>
+      </div>
+    </div>
+
+    <script>
+      const allQuestions = [
+        {
+          question: "US has low sensitivity in diagnosis of appendicitis:",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "The main therapy of acute appendicitis is medical treatment.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "The site of incision in appendectomy is:",
+          options: [
+            "Umbilicus",
+            "McBurney's point",
+            "Subcostal incision",
+            "Lumbar incision",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Tetanus is caused by:",
+          options: [
+            "Clostridium tetani",
+            "Clostridium welchii",
+            "Staph. aureus",
+            "Strep. coli",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question: "Gas gangrene is caused by:",
+          options: [
+            "Clostridium tetani",
+            "Clostridium welchii",
+            "Staph. aureus",
+            "T.B bacilli",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Manifestations of tetanus include:",
+          options: [
+            "Stiffness of head&neck",
+            "Anxious look",
+            "Risus sardonicus",
+            "All answers are correct",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question: "Incubation period in tetanus is:",
+          options: ["1 week", "1 month", "3 months", "1 day"],
+          correctIndex: 0,
+        },
+        {
+          question: "In clean surgical wound, infection rate:",
+          options: ["2%", "20%", "80%", "Zero"],
+          correctIndex: 0,
+        },
+        {
+          question: "Rate of infection in dirty surgical wound is:",
+          options: ["2%", "8%", "Up to 70%", "Zero"],
+          correctIndex: 2,
+        },
+        {
+          question: "The most common organism in surgical site infection:",
+          options: ["Staph. aureus", "E. coli", "T.B", "Clostridium welchii"],
+          correctIndex: 0,
+        },
+        {
+          question: "Surgical site infection occurs within:",
+          options: ["30 days", "3 months", "6 months", "1 year"],
+          correctIndex: 0,
+        },
+        {
+          question: "Appendicitis is an inflammation in the cecum",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Factors favoring perforation of the appendix include all except:",
+          options: [
+            "Extremes of age",
+            "Obstruction by stool",
+            "Immunosuppression",
+            "Healthy patient",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question: "The clinical presentation of appendicitis includes:",
+          options: [
+            "Pain in Rt. iliac fossa",
+            "Tender & rebound tenderness at McBurney’s point",
+            "Vomiting & constipation",
+            "All answers are true",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question: "In appendicitis, WBC count is within normal count",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is affected in a full-thickness burn?",
+          options: [
+            "Only the epidermis",
+            "Epidermis and dermis",
+            "reach to bone",
+            "all answers are correct",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question: "What happens in a superficial burn to the skin?",
+          options: [
+            "redness",
+            "dry",
+            "painful and spontenous healing",
+            "all answers are correct",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question:
+            "Does a partial-thickness burn have a bad prognosis and require a long time for healing?",
+          options: ["Yes", "No"],
+          correctIndex: 0,
+        },
+        {
+          question: "What is an indication for intubation in burn patients?",
+          options: [
+            "Severe burns of head and neck",
+            "CO poisoning",
+            "Inhalation burn",
+            "all answers are correct",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question:
+            "Which formula is used for resuscitation in burned patients?",
+          options: [
+            "Parkland formula",
+            "Wallace rule of nines",
+            "Baxter’s rule",
+            "all answers are false",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Escharotomy is performed in burn patients to improve healing.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Escharotomy is done for improving peripheral circulation in burned patient",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Which of the following is not a type of burn?",
+          options: [
+            "Thermal burns",
+            "Chemical burns",
+            "forest bit",
+            "Electrical burns",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Burn injuries consist of three zones. Which of the following is correct?",
+          options: [
+            "Necrosis, stasis, hyperemia",
+            "Coagulation, stasis, hyperemia",
+            "Coagulation, hyperemia, regeneration",
+            "Necrosis, coagulation, inflammation",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Burns affect only the area directly exposed and no other organ affection",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "Which part of the skin is affected by superficial burns?",
+          options: [
+            "Epidermis only",
+            "Epidermis and dermis",
+            "All layers of skin",
+            "Hypodermis",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question: "What layers are involved in partial-thickness burns?",
+          options: [
+            "Epidermis only",
+            "Epidermis and part of the dermis",
+            "Dermis and hypodermis",
+            "All layers of skin",
+          ],
+          correctIndex: 1,
+        },
+      ];
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+
+      const startBtn = document.getElementById("start-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const tryAgainBtn = document.getElementById("try-again-btn");
+      const quizBox = document.getElementById("quiz-box");
+      const startBox = document.getElementById("start-box");
+      const questionNumberElement = document.getElementById("question-number");
+      const questionText = document.getElementById("question-text");
+      const answerButtons = document.getElementById("answer-buttons");
+      const resultBox = document.getElementById("result-box");
+      const scoreText = document.getElementById("score-text");
+      const themeToggleBtn = document.getElementById("theme-toggle");
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      function isTrueFalseQuestion(questionObj) {
+        const opts = questionObj.options;
+        return (
+          opts.length === 2 && opts.includes("True") && opts.includes("False")
+        );
+      }
+
+      function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        shuffleArray(allQuestions);
+        startBox.classList.add("hide");
+        resultBox.classList.add("hide");
+        quizBox.classList.remove("hide");
+        setNextQuestion();
+      }
+
+      function setNextQuestion() {
+        resetState();
+        if (currentQuestionIndex < allQuestions.length) {
+          showQuestion(allQuestions[currentQuestionIndex]);
+        } else {
+          showResult();
+        }
+      }
+
+      function showQuestion(questionObj) {
+        questionNumberElement.textContent = `Question ${
+          currentQuestionIndex + 1
+        } of ${allQuestions.length}`;
+        questionText.textContent = questionObj.question;
+
+        const optionsWithFlag = questionObj.options.map((opt, i) => ({
+          text: opt,
+          isCorrect: i === questionObj.correctIndex,
+        }));
+
+        if (!isTrueFalseQuestion(questionObj)) {
+          const fixedOptions = [
+            "All answers are true",
+            "All answers true",
+            "All answers are false",
+            "All answers are correct",
+            "All answers are wrong",
+            "All of the above",
+          ];
+          const fixedOptionIndex = optionsWithFlag.findIndex((option) =>
+            fixedOptions.includes(option.text.trim())
+          );
+
+          if (fixedOptionIndex !== -1) {
+            const fixedOption = optionsWithFlag.splice(fixedOptionIndex, 1)[0];
+            shuffleArray(optionsWithFlag);
+            optionsWithFlag.push(fixedOption);
+          } else {
+            shuffleArray(optionsWithFlag);
+          }
+        }
+
+        optionsWithFlag.forEach((option) => {
+          const button = document.createElement("button");
+          button.textContent = option.text;
+          button.classList.add("answer-btn");
+          button.addEventListener("click", () =>
+            selectAnswer(button, option.isCorrect)
+          );
+          answerButtons.appendChild(button);
+        });
+      }
+
+      function resetState() {
+        nextBtn.disabled = true;
+        answerButtons.innerHTML = "";
+      }
+
+      function selectAnswer(button, isCorrect) {
+        const buttons = answerButtons.querySelectorAll("button");
+        buttons.forEach((btn) => (btn.disabled = true));
+
+        if (isCorrect) {
+          button.classList.add("correct");
+          score++;
+        } else {
+          button.classList.add("wrong");
+          buttons.forEach((btn) => {
+            if (
+              btn.textContent ===
+              allQuestions[currentQuestionIndex].options[
+                allQuestions[currentQuestionIndex].correctIndex
+              ]
+            ) {
+              btn.classList.add("correct");
+            }
+          });
+        }
+
+        nextBtn.disabled = false;
+      }
+
+      function showResult() {
+        quizBox.classList.add("hide");
+        resultBox.classList.remove("hide");
+        scoreText.textContent = `${score} out of ${allQuestions.length}`;
+      }
+
+      themeToggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        themeToggleBtn.textContent = document.body.classList.contains("dark")
+          ? "Light mode"
+          : "Dark mode";
+      });
+
+      startBtn.addEventListener("click", startQuiz);
+      nextBtn.addEventListener("click", () => {
+        currentQuestionIndex++;
+        setNextQuestion();
+      });
+      tryAgainBtn.addEventListener("click", startQuiz);
+    </script>
+  </body>
+</html>
